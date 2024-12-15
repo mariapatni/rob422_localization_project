@@ -3,17 +3,18 @@ import pybullet_data
 import numpy as np
 from kalman_filter import KalmanFilter
 from particle_filter import ParticleFilter
-from utils import setup_simulation, get_noisy_position
-from visualization import visualize_particles, visualize_paths
+from utils import setup_simulation, get_noisy_position, add_obstacles_along_path
+from visualization import visualize_paths
 import time
 
 def generate_jagged_path(length, num_segments):
     path = []
-    segment_length = length / num_segments
-    direction = 1
     current_position = np.array([0, 0])
+    direction = 1
     
     for _ in range(num_segments):
+        # Random segment length between 0.5 and 1.5
+        segment_length = np.random.uniform(0.5, 1.5)
         next_position = current_position + np.array([segment_length, direction * segment_length])
         path.append(next_position)
         current_position = next_position
@@ -31,8 +32,11 @@ def simulate(robot_id, kalman_filter, particle_filter, true_path):
     kalman_path = []
     particle_path = []
     
-    # Set the camera view from above and zoomed out
-    p.resetDebugVisualizerCamera(cameraDistance=20, cameraYaw=90, cameraPitch=-90, cameraTargetPosition=[0, 0, 0])
+    # Set the camera view from above with the origin at the bottom of the screen
+    p.resetDebugVisualizerCamera(cameraDistance=20, cameraYaw=90, cameraPitch=-90, cameraTargetPosition=[10, 0, 0])
+    
+    # Add obstacles along the true path
+    add_obstacles_along_path(true_path)
     
     # Run the simulation for the length of the true path
     for step in range(len(true_path)):
@@ -78,7 +82,7 @@ def simulate(robot_id, kalman_filter, particle_filter, true_path):
     print(f"Mean Error for Particle Filter Path: {particle_error:.4f}")
     
     # Visualize paths and final positions
-    visualize_paths(np.array(true_path), kalman_path, particle_path, particle_filter.particles)
+    visualize_paths(np.array(true_path), kalman_path, particle_path, particle_filter.particles, kalman_error, particle_error)
     
     # Compare final estimates
     print("Final Kalman Estimate:", kalman_filter.state)
@@ -97,7 +101,7 @@ if __name__ == "__main__":
     # Adjust the instantiation of ParticleFilter to match its constructor
     particle_filter = ParticleFilter(initial_state, num_particles=100, process_noise=process_noise, measurement_noise=measurement_noise)
     
-    # Generate a jagged true path
+    # Generate a jagged true path with random segment lengths
     true_path = generate_jagged_path(length=25, num_segments=25)
     
     robot_id = setup_simulation()

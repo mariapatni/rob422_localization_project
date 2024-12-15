@@ -21,38 +21,32 @@ def visualize_particles(particles, weights, true_position=None):
     plt.grid(True)
     plt.show()
 
-def visualize_paths(true_path, kalman_path, particle_path, particles):
-    fig, axs = plt.subplots(2, 1, figsize=(8, 8))
+def visualize_paths(true_path, kalman_path, particle_path, particles, kalman_error, particle_error):
+    # Create a figure with two subplots, one below the other, with smaller size
+    fig, axs = plt.subplots(2, 1, figsize=(8, 8))  # Adjusted size to be smaller
     
-    # Determine the limits for the plots
-    all_x = np.concatenate((true_path[:, 0], kalman_path[:, 0], particle_path[:, 0]))
-    all_y = np.concatenate((true_path[:, 1], kalman_path[:, 1], particle_path[:, 1]))
-    x_min, x_max = all_x.min() - 1, all_x.max() + 1
-    y_min, y_max = all_y.min() - 1, all_y.max() + 1
-    
-    # Kalman Filter Path Visualization
-    axs[0].plot(true_path[:, 0], true_path[:, 1], 'g-', label='True Path', linewidth=2)
-    axs[0].plot(kalman_path[:, 0], kalman_path[:, 1], color='blue', linestyle='--', linewidth=2, alpha=0.6, label='Kalman Filter Path')
-    axs[0].set_xlim(x_min, x_max)
-    axs[0].set_ylim(y_min, y_max)
+    # Plot Kalman Filter Path vs True Path
+    axs[0].plot(true_path[:, 0], true_path[:, 1], label='True Path', color='black')
+    axs[0].plot(kalman_path[:, 0], kalman_path[:, 1], label='Kalman Filter Path', color='blue')
     axs[0].set_xlabel('X Position')
     axs[0].set_ylabel('Y Position')
-    axs[0].set_title('Kalman Filter vs True Path')
-    axs[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=2)
+    axs[0].set_title('Kalman Filter Path vs True Path')
+    axs[0].legend()
     axs[0].grid(True)
-    axs[0].set_aspect('equal', adjustable='box')
+    axs[0].text(0.5, -0.15, f"Mean Error: {kalman_error:.4f}", 
+                horizontalalignment='center', verticalalignment='center', transform=axs[0].transAxes)
     
-    # Particle Filter Path Visualization
-    axs[1].plot(true_path[:, 0], true_path[:, 1], 'g-', label='True Path', linewidth=2)
-    axs[1].plot(particle_path[:, 0], particle_path[:, 1], color='red', linestyle='-.', linewidth=2, alpha=0.6, label='Particle Filter Path')
-    axs[1].set_xlim(x_min, x_max)
-    axs[1].set_ylim(y_min, y_max)
+    # Plot Particle Filter Path vs True Path
+    axs[1].plot(true_path[:, 0], true_path[:, 1], label='True Path', color='black')
+    axs[1].plot(particle_path[:, 0], particle_path[:, 1], label='Particle Filter Path', color='red')
     axs[1].set_xlabel('X Position')
     axs[1].set_ylabel('Y Position')
-    axs[1].set_title('Particle Filter vs True Path')
-    axs[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=2)
+    axs[1].set_title('Particle Filter Path vs True Path')
+    axs[1].legend()
     axs[1].grid(True)
-    axs[1].set_aspect('equal', adjustable='box')
+    axs[1].text(0.5, -0.15, f"Mean Error: {particle_error:.4f}", 
+                horizontalalignment='center', verticalalignment='center', transform=axs[1].transAxes)
     
+    # Adjust layout to prevent overlap
     plt.tight_layout()
-    plt.show() 
+    plt.show()
