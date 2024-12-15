@@ -22,6 +22,27 @@ def generate_jagged_path(length, num_segments):
     
     return np.array(path)
 
+def generate_challenging_path():
+    # Hard-coded path with abrupt changes and occlusions
+    path = np.array([
+        [0, 0],
+        [1, 1],
+        [2, 0],
+        [3, 3],  # Sudden jump
+        [4, 1],
+        [5, 5],  # Another jump
+        [6, 2],
+        [7, 7],  # Large jump
+        [8, 3],
+        [9, 9],  # Final jump
+    ], dtype=np.float64)  # Ensure path is of type float64
+    
+    # Add non-Gaussian noise
+    noise = np.random.laplace(0, 0.5, path.shape)  # Laplace noise
+    path += noise
+    
+    return path
+
 def calculate_error(true_path, estimated_path):
     # Calculate the Euclidean distance between corresponding points
     errors = np.linalg.norm(true_path - estimated_path, axis=1)
@@ -88,22 +109,61 @@ def simulate(robot_id, kalman_filter, particle_filter, true_path):
     print("Final Kalman Estimate:", kalman_filter.state)
     print("Final Particle Estimate:", particle_estimate)
 
-if __name__ == "__main__":
+def add_obstacles_and_return_ids(path):
+    obstacle_ids = []
+    # Assuming add_obstacles_along_path returns the IDs of the obstacles it creates
+    obstacle_ids.extend(add_obstacles_along_path(path))
+    return obstacle_ids
+
+def clear_obstacles(obstacle_ids):
+    for obstacle_id in obstacle_ids:
+        p.removeBody(obstacle_id)
+
+def generate_unpredictable_path(length, num_segments):
+    path = []
+    current_position = np.array([0, 0])
     
+    for _ in range(num_segments):
+        # Introduce extreme changes in direction and speed
+        segment_length = np.random.uniform(0.1, 2.0)
+        angle = np.random.uniform(-2 * np.pi, 2 * np.pi)  # Extreme direction changes
+        direction = np.array([np.cos(angle), np.sin(angle)])
+        
+        # Add non-linear dynamics by varying the segment length randomly
+        next_position = current_position + direction * segment_length
+        path.append(next_position)
+        current_position = next_position
+    
+    path = np.array(path)
+    
+    # Add random noise to the path
+    noise = np.random.normal(0, 1.0, path.shape)  # High noise level
+    path += noise
+    
+    return path
+
+if __name__ == "__main__":
     initial_state = [0, 0, 0.5]
     
-    # Further increase the process and measurement noise for even more deviation
-    process_noise = [0.2, 0.2, 0.2]  # Increased from [0.1, 0.1, 0.1]
-    measurement_noise = [2.0, 2.0, 2.0]  # Increased from [1.0, 1.0, 1.0]
+    # Set very high noise settings for a "bad" Kalman filter
+    kalman_process_noise = [1000.0, 1000.0, 1000.0]  # Significantly increased
+    measurement_noise = [2000.0, 1000.0, 2000.0]     # Significantly increased
     
-    kalman_filter = KalmanFilter(initial_state, process_noise, measurement_noise)
+    particle_process_noise = [0.1, 0.1, 0.1]
+    num_particles = 500 
     
-    # Adjust the instantiation of ParticleFilter to match its constructor
-    particle_filter = ParticleFilter(initial_state, num_particles=100, process_noise=process_noise, measurement_noise=measurement_noise)
+    # Initialize filters with increased noise
+    kalman_filter = KalmanFilter(initial_state, kalman_process_noise, measurement_noise)
+    particle_filter = ParticleFilter(initial_state, num_particles=num_particles, process_noise=particle_process_noise, measurement_noise=measurement_noise)
     
-    # Generate a jagged true path with random segment lengths
-    true_path = generate_jagged_path(length=25, num_segments=25)
-    
+    # Setup simulation
     robot_id = setup_simulation()
     
-    simulate(robot_id, kalman_filter, particle_filter, true_path) 
+    # Generate paths
+    challenging_path = generate_challenging_path()
+    
+    # Run simulation for challenging path (Particle filter)
+    print("Running simulation for challenging path (Particle filter)...")
+    simulate(robot_id, kalman_filter, particle_filter, challenging_path)
+
+    

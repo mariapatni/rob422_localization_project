@@ -22,6 +22,9 @@ def visualize_particles(particles, weights, true_position=None):
     plt.show()
 
 def visualize_paths(true_path, kalman_path, particle_path, particles, kalman_error, particle_error):
+    
+    # PART 1: Simple Path, Kalman Filter Path vs Particle Filter Path
+    
     # Create a figure with two subplots, one below the other, with smaller size
     fig, axs = plt.subplots(2, 1, figsize=(8, 8))  # Adjusted size to be smaller
     
@@ -50,3 +53,5 @@ def visualize_paths(true_path, kalman_path, particle_path, particles, kalman_err
     # Adjust layout to prevent overlap
     plt.tight_layout()
     plt.show()
+
+    # PART 2: Complex Path, Kalman Filter Path vs Particle Filter Path
