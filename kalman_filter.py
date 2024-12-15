@@ -1,15 +1,19 @@
 import numpy as np
 
 class KalmanFilter:
-    def __init__(self, initial_state, process_noise, measurement_noise):
+    def __init__(self, initial_state, process_noise, measurement_noise, flag):
         self.state = np.array(initial_state)
         self.process_noise = np.diag(process_noise) * 2.55
         self.measurement_noise = np.diag(measurement_noise) * 5
         self.covariance = np.eye(len(initial_state)) * 1000
+        self.flag = flag
 
     def predict(self, control_input):
         self.state = self.state + control_input
-        self.covariance = self.covariance + self.process_noise * 10
+        if self.flag == 1:
+            self.covariance = self.covariance + self.process_noise * 50
+        else:
+            self.covariance = self.covariance + self.process_noise
 
     def update(self, measurement):
         S = self.covariance * 10 + self.measurement_noise * 10

@@ -61,7 +61,7 @@ def calculate_error(true_path, estimated_path):
     mean_error = np.mean(errors)
     return mean_error
 
-def simulate(robot_id, kalman_filter, particle_filter, true_path):
+def simulate(robot_id, kalman_filter, particle_filter, true_path, color):
     kalman_path = []
     particle_path = []
     
@@ -69,7 +69,7 @@ def simulate(robot_id, kalman_filter, particle_filter, true_path):
     p.resetDebugVisualizerCamera(cameraDistance=20, cameraYaw=90, cameraPitch=-90, cameraTargetPosition=[10, 0, 0])
     
     # Add obstacles along the true path
-    add_obstacles_along_path(true_path)
+    add_obstacles_along_path(true_path, color)
     
     # Run the simulation for the length of the true path
     for step in range(len(true_path)):
@@ -188,17 +188,28 @@ if __name__ == "__main__":
     num_particles = 500 
     
     # Initialize filters
-    kalman_filter = KalmanFilter(initial_state, kalman_process_noise, measurement_noise)
+    kalman_filter = KalmanFilter(initial_state, kalman_process_noise, measurement_noise, 0)
     particle_filter = ParticleFilter(initial_state, num_particles=num_particles, process_noise=particle_process_noise, measurement_noise=measurement_noise)
     
     # Setup simulation
     robot_id = setup_simulation()
+
+    # Generate easy path
+    easy_path = generate_jagged_path(length=15, num_segments=10)
+    # Run simulation for easy path
+    print("Running simulation for easy path...")
+    simulate(robot_id, kalman_filter, particle_filter, easy_path, [0, 0, 100, 1])
     
+    # Initialize filters
+    kalman_filter = KalmanFilter(initial_state, kalman_process_noise, measurement_noise, 1)
+    #particle_filter = ParticleFilter(initial_state, num_particles=num_particles, process_noise=particle_process_noise, measurement_noise=measurement_noise)
+    
+
     # Generate an extremely challenging path
     challenging_path = generate_extremely_challenging_path(length=15, num_segments=10)
     
     # Run simulation for challenging path
     print("Running simulation for extremely challenging path...")
-    simulate(robot_id, kalman_filter, particle_filter, challenging_path)
+    simulate(robot_id, kalman_filter, particle_filter, challenging_path, [100, 0, 0,1])
 
     

@@ -16,7 +16,7 @@ def setup_simulation():
     
     return robot_id
 
-def add_obstacles_along_path(path, offset=0.5):
+def add_obstacles_along_path(path, color, offset=0.5):
     obstacle_ids = []  # Initialize a list to store obstacle IDs
     for point in path:
         offset = 1.5  # Example offset value
@@ -24,10 +24,11 @@ def add_obstacles_along_path(path, offset=0.5):
         left_obstacle = point_3d + np.array([0, offset, 0.5])
         right_obstacle = point_3d + np.array([0, -offset, 0.5])
         
-        # Load obstacles and store their IDs
+        # Load obstacles and store their IDs with specified color
         left_id = p.loadURDF("cube.urdf", basePosition=left_obstacle, globalScaling=0.2)
+        p.changeVisualShape(left_id, -1, rgbaColor=color)  # Change color of the left obstacle
         right_id = p.loadURDF("cube.urdf", basePosition=right_obstacle, globalScaling=0.2)
-        
+        p.changeVisualShape(right_id, -1, rgbaColor=color)  # Change color of the right obstacle
         # Append the IDs to the list
         obstacle_ids.extend([left_id, right_id])
     
