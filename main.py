@@ -43,6 +43,18 @@ def generate_challenging_path():
     
     return path
 
+def generate_bad_path(steps):
+    """
+    Generates a path with non-linear, oscillatory, and sudden movements.
+    """
+    t = np.linspace(0, 10, steps)
+    
+    # Non-linear path with oscillations and sudden jumps
+    x = 10 * np.sin(t) + np.piecewise(t, [t < 5, t >= 5], [0, lambda t: 20 * np.sin(2 * t)])
+    y = 5 * np.cos(t) + np.where(t > 7, 50, 0)  # Sudden jump at t > 7
+    
+    return np.stack((x, y), axis=1)
+
 def calculate_error(true_path, estimated_path):
     # Calculate the Euclidean distance between corresponding points
     errors = np.linalg.norm(true_path - estimated_path, axis=1)
@@ -142,28 +154,51 @@ def generate_unpredictable_path(length, num_segments):
     
     return path
 
+def generate_extremely_challenging_path(length, num_segments):
+    path = []
+    current_position = np.array([0, 0])
+    
+    for _ in range(num_segments):
+        # Introduce extreme changes in direction and speed
+        segment_length = np.random.uniform(0.1, 2.0)
+        angle = np.random.uniform(-2 * np.pi, 2 * np.pi)  # Extreme direction changes
+        direction = np.array([np.cos(angle), np.sin(angle)])
+        
+        # Add non-linear dynamics by varying the segment length randomly
+        next_position = current_position + direction * segment_length
+        path.append(next_position)
+        current_position = next_position
+    
+    path = np.array(path)
+    
+    # Add random noise to the path
+    noise = np.random.normal(0, 1.0, path.shape)  # High noise level
+    path += noise
+    
+    return path
+
 if __name__ == "__main__":
     initial_state = [0, 0, 0.5]
     
-    # Set very high noise settings for a "bad" Kalman filter
-    kalman_process_noise = [1000.0, 1000.0, 1000.0]  # Significantly increased
-    measurement_noise = [2000.0, 1000.0, 2000.0]     # Significantly increased
+    # Set noise settings for the Kalman filter
+    kalman_process_noise = [1000.0, 1000.0, 1000.0]
+    measurement_noise = [2000.0, 1000.0, 2000.0]
     
     particle_process_noise = [0.1, 0.1, 0.1]
     num_particles = 500 
     
-    # Initialize filters with increased noise
+    # Initialize filters
     kalman_filter = KalmanFilter(initial_state, kalman_process_noise, measurement_noise)
     particle_filter = ParticleFilter(initial_state, num_particles=num_particles, process_noise=particle_process_noise, measurement_noise=measurement_noise)
     
     # Setup simulation
     robot_id = setup_simulation()
     
-    # Generate paths
-    challenging_path = generate_challenging_path()
+    # Generate an extremely challenging path
+    challenging_path = generate_extremely_challenging_path(length=15, num_segments=10)
     
-    # Run simulation for challenging path (Particle filter)
-    print("Running simulation for challenging path (Particle filter)...")
+    # Run simulation for challenging path
+    print("Running simulation for extremely challenging path...")
     simulate(robot_id, kalman_filter, particle_filter, challenging_path)
 
     

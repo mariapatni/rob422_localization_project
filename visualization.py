@@ -28,6 +28,11 @@ def visualize_paths(true_path, kalman_path, particle_path, particles, kalman_err
     # Create a figure with two subplots, one below the other, with smaller size
     fig, axs = plt.subplots(2, 1, figsize=(8, 8))  # Adjusted size to be smaller
     
+    print(true_path)
+    print(kalman_path)
+    # print(particle_path)
+
+
     # Plot Kalman Filter Path vs True Path
     axs[0].plot(true_path[:, 0], true_path[:, 1], label='True Path', color='black')
     axs[0].plot(kalman_path[:, 0], kalman_path[:, 1], label='Kalman Filter Path', color='blue')
