@@ -66,7 +66,7 @@ def simulate(robot_id, kalman_filter, particle_filter, true_path, color):
     particle_path = []
     
     # Set the camera view from above with the origin at the bottom of the screen
-    p.resetDebugVisualizerCamera(cameraDistance=20, cameraYaw=90, cameraPitch=-90, cameraTargetPosition=[10, 0, 0])
+    #p.resetDebugVisualizerCamera(cameraDistance=20, cameraYaw=90, cameraPitch=-90, cameraTargetPosition=[10, 0, 0])
     
     # Add obstacles along the true path
     add_obstacles_along_path(true_path, color)
